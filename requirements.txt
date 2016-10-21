@@ -1,0 +1,2 @@
+html2text==2016.9.19
+requests==2.11.1
