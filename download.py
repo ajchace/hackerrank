@@ -4,21 +4,24 @@
 
 # TODO:
 #    2. Figure out what writelines() pukes.
-#    3. Put results in directory
-#    4. Dynamically create directory structure based on chapter names.
 #    5. Store URL for each problem description with (in?) problem description.
 #    6. Better logging.
 #    7. Makefile to convert markdown to other formats.
-#    8. virtualenv with requirements.txt
+#    9. Add function(s) to get a list of tracks
+#   10. Add support for command line arguments to list/select/download tracks
 
 # TODONE:
 #    1. Fix FIXMEs.
+#    3. Put results in directory
+#    4. Dynamically create directory structure based on chapter names.
+#    8. virtualenv with requirements.txt
 
 #--------------------------------------------------------------------------------
 
-import requests
-import json
 import html2text
+import json
+import os.path
+import requests
 
 #--------------------------------------------------------------------------------
 
@@ -93,35 +96,46 @@ def get_challenge_preview(data):
 #--------------------------------------------------------------------------------
 
 def save(path, content):
-    path = "results/" + path
-    with open(path, 'w') as fd:
+    '''Save content at path, creating parent directories if necessary'''
+
+    solution = os.path.join(path, "solution")
+    tests = os.path.join(path, "tests")
+
+    for item in (path, solution, tests):
+        if not os.path.isdir(item):
+            os.makedirs(item)
+
+    filename = os.path.join(path, "challenge.md")
+
+    with open(filename, 'w') as fd:
         try:
             fd.writelines(content)
         except:
-            print "%s: %s" % (path, "Puke! Vomit!")
+            print "    %s: %s" % (filename, "Puke! Vomit!")
 
 #--------------------------------------------------------------------------------
 
 def main():
-    track = "python"
-    chapters = get_chapters_in_track("python")
-    for chapter in chapters:
-        slug = chapter['slug']
-        name = chapter['name']
-        print "[ %-24s ]--------------------------------------------------" % (name)
-        challenges = get_challenges_in_chapter(track,slug)        
-        for challenge in challenges:
-            slug = challenge['slug']
-            data = get_challenge_data(slug)
-            name = get_challenge_name(data)
-            preview = get_challenge_preview(data)
-            content = get_challenge_body(data)
-            content = ("%s\n\n" % preview) + content 
-            content = ("# %s\n\n" % name) + content
-            path = name + ".md"
-            save(path, content)
-            print "    %s" % (name)
-        print
+    tracks = [ "python", "shell" ]
+    for track in tracks:
+        chapters = get_chapters_in_track(track)
+        for chapter in chapters:
+            slug = chapter['slug']
+            chapter_name = chapter['name']
+            print "[ %-24s ]--------------------------------------------------" % (chapter_name)
+            challenges = get_challenges_in_chapter(track,slug)
+            for challenge in challenges:
+                slug = challenge['slug']
+                data = get_challenge_data(slug)
+                challenge_name = get_challenge_name(data)
+                challenge_preview = get_challenge_preview(data)
+                challenge_content = get_challenge_body(data)
+                challenge_content = ("%s\n\n" % challenge_preview) + challenge_content
+                challenge_content = ("# %s\n\n" % challenge_name) + challenge_content
+                challenge_path = os.path.join("results", track, chapter_name, challenge_name)
+                save(challenge_path, challenge_content)
+                print "    %s" % (challenge_name)
+            print
 
 #--------------------------------------------------------------------------------
 
