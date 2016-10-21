@@ -29,6 +29,17 @@ base_url = "https://www.hackerrank.com/rest/contests/master"
 
 #--------------------------------------------------------------------------------
 
+def get_tracks():
+    '''Get a dictionary of tracks'''
+    # https://www.hackerrank.com/rest/contests/master/tracks/
+    url = base_url + "/tracks/"
+    response = requests.get(url)
+    data = response.json()
+    tracks = data['models']
+    return tracks
+
+#--------------------------------------------------------------------------------
+
 def get_chapters_in_track(track):
     '''Get a dictionary of chapters for a given track'''
     # https://www.hackerrank.com/rest/contests/master/tracks/python/chapters/
@@ -116,7 +127,7 @@ def save(path, content):
 #--------------------------------------------------------------------------------
 
 def main():
-    tracks = [ "python", "shell" ]
+    tracks = get_tracks()
     for track in tracks:
         chapters = get_chapters_in_track(track)
         for chapter in chapters:
