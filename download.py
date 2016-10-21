@@ -3,14 +3,16 @@
 #--------------------------------------------------------------------------------
 
 # TODO:
-    1. Fix FIXMEs.
-    2. Figure out what writelines() pukes.
-    3. Put results in directory
-    4. Dynamically create directory structure based on chapter names.
-    5. Store URL for each problem description with (in?) problem description.
-    6. Better logging.
-    7. Makefile to convert markdown to other formats.
-    8. virtualenv with requirements.txt
+#    2. Figure out what writelines() pukes.
+#    3. Put results in directory
+#    4. Dynamically create directory structure based on chapter names.
+#    5. Store URL for each problem description with (in?) problem description.
+#    6. Better logging.
+#    7. Makefile to convert markdown to other formats.
+#    8. virtualenv with requirements.txt
+
+# TODONE:
+#    1. Fix FIXMEs.
 
 #--------------------------------------------------------------------------------
 
@@ -35,19 +37,6 @@ def get_chapters_in_track(track):
 
 #--------------------------------------------------------------------------------
 
-# FIXME: Returning a list of slugs is very inflexible.
-#        Instead, function should operate on a single
-#        chapter so we can pass list of chapters around.
-#        This will make it much easier to access other
-#        data for each chapter (name, etc.)
-
-def get_chapter_slugs(chapters):
-    '''Get chapter slugs from a dictionary of chapters'''
-    slugs = [ chapter['slug'] for chapter in chapters ]
-    return slugs
-
-#--------------------------------------------------------------------------------
-
 def get_challenges_in_chapter(track, slug):
     '''Get a dictionary of challenges in a chapter'''
     # "https://www.hackerrank.com/rest/contests/master/categories/python|py-introduction/challenges"
@@ -56,19 +45,6 @@ def get_challenges_in_chapter(track, slug):
     data = response.json()
     challenges = data['models']
     return challenges
-
-#--------------------------------------------------------------------------------
-
-# FIXME: Returning a list of slugs is very inflexible.
-#        Instead, function should operate on a single
-#        chapter so we can pass list of chapters around.
-#        This will make it much easier to access other
-#        data for each chapter (name, etc.)
-
-def get_challenge_slugs(challenges):
-    '''Get slugs from a dictionary of challenges'''
-    slugs = [ challenge['slug'] for challenge in challenges ]
-    return slugs
 
 #--------------------------------------------------------------------------------
 
@@ -107,14 +83,13 @@ def get_challenge_body(slug):
 def main():
     track = "python"
     chapters = get_chapters_in_track("python")
-    chapter_slugs = get_chapter_slugs(chapters)
-    for slug in chapter_slugs:
-        print slug
-        print "----------------------------------------"
+    for chapter in chapters:
+        slug = chapter['slug']
+        print "[ %s ]----------------------------------------" % (slug)
         challenges = get_challenges_in_chapter(track,slug)        
-        challenge_slugs = get_challenge_slugs(challenges)
-        for slug in challenge_slugs:
-            print slug
+        for challenge in challenges:
+            slug = challenge['slug']
+            print "    %s" % (slug)
             get_challenge_body(slug)
         print
 
