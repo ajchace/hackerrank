@@ -48,15 +48,18 @@ def get_challenges_in_chapter(track, slug):
 
 #--------------------------------------------------------------------------------
 
-def get_challenge_body(slug):
-    '''Get body (problem description) for a given challenge'''
+def get_challenge_data(slug):
     # "https://www.hackerrank.com/rest/contests/master/challenges/py-hello-world" 
     url = base_url + "/challenges/" + slug
     response = requests.get(url);
     data = response.json() 
+    return data
+
+#--------------------------------------------------------------------------------
+
+def get_challenge_body(data):
+    '''Get body (problem description) for a given challenge'''
     html = data['model']['body_html']
-    name = data['model']['name']
-    preview = data['model']['preview']
 
     parser = html2text.HTML2Text()
 
@@ -70,13 +73,32 @@ def get_challenge_body(slug):
     except:
         print "%s: %s" % (slug, "Puke! Vomit!")
 
-    with open(name + ".md", 'w') as fd:
-        fd.write("# %s\n\n" % name)
-        fd.write("%s\n\n" % preview)
+    return md
+
+#--------------------------------------------------------------------------------
+
+def get_challenge_name(data):
+    '''Get name for a given challenge'''
+    name = data['model']['name']
+    name = name.strip()
+    return name
+
+#--------------------------------------------------------------------------------
+
+def get_challenge_preview(data):
+    '''Get preview for a given challenge'''
+    preview = data['model']['preview']
+    return preview
+
+#--------------------------------------------------------------------------------
+
+def save(path, content):
+    path = "results/" + path
+    with open(path, 'w') as fd:
         try:
-            fd.writelines(md)
+            fd.writelines(content)
         except:
-            print "%s: %s" % (slug, "Puke! Vomit!")
+            print "%s: %s" % (path, "Puke! Vomit!")
 
 #--------------------------------------------------------------------------------
 
@@ -85,12 +107,20 @@ def main():
     chapters = get_chapters_in_track("python")
     for chapter in chapters:
         slug = chapter['slug']
-        print "[ %s ]----------------------------------------" % (slug)
+        name = chapter['name']
+        print "[ %-24s ]--------------------------------------------------" % (name)
         challenges = get_challenges_in_chapter(track,slug)        
         for challenge in challenges:
             slug = challenge['slug']
-            print "    %s" % (slug)
-            get_challenge_body(slug)
+            data = get_challenge_data(slug)
+            name = get_challenge_name(data)
+            preview = get_challenge_preview(data)
+            content = get_challenge_body(data)
+            content = ("%s\n\n" % preview) + content 
+            content = ("# %s\n\n" % name) + content
+            path = name + ".md"
+            save(path, content)
+            print "    %s" % (name)
         print
 
 #--------------------------------------------------------------------------------
